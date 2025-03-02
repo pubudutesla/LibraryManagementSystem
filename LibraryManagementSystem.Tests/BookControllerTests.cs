@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagementSystem.Api.Controllers;
 using LibraryManagementSystem.Application.Services;
-using LibraryManagementSystem.Domain.Entities;
+using LibraryManagementSystem.Application.DTOs;
 
 namespace LibraryManagementSystem.Tests.Controllers
 {
@@ -24,10 +25,10 @@ namespace LibraryManagementSystem.Tests.Controllers
         public async Task GetBooks_ShouldReturnOk_WithBooks()
         {
             // Arrange
-            var books = new List<Book>
+            var books = new List<BookDto>
             {
-                new Book { Id = 1, Title = "Book A", Author = "Author A" },
-                new Book { Id = 2, Title = "Book B", Author = "Author B" }
+                new BookDto { Id = 1, Title = "Book A", Author = "Author A" },
+                new BookDto { Id = 2, Title = "Book B", Author = "Author B" }
             };
 
             _mockBookService.Setup(s => s.GetAllBooksAsync()).ReturnsAsync(books);
@@ -37,7 +38,7 @@ namespace LibraryManagementSystem.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var returnBooks = Assert.IsAssignableFrom<IEnumerable<Book>>(okResult.Value);
+            var returnBooks = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResult.Value);
             Assert.Equal(2, returnBooks.Count());
         }
 
@@ -45,7 +46,7 @@ namespace LibraryManagementSystem.Tests.Controllers
         public async Task GetBookById_ShouldReturnNotFound_WhenBookDoesNotExist()
         {
             // Arrange
-            _mockBookService.Setup(s => s.GetBookByIdAsync(It.IsAny<int>())).ReturnsAsync((Book)null);
+            _mockBookService.Setup(s => s.GetBookByIdAsync(It.IsAny<int>())).ReturnsAsync((BookDto)null);
 
             // Act
             var result = await _controller.GetBookById(999);
@@ -58,28 +59,34 @@ namespace LibraryManagementSystem.Tests.Controllers
         public async Task AddBook_ShouldReturnCreatedAtAction_WhenSuccessful()
         {
             // Arrange
-            var newBook = new Book { Id = 3, Title = "New Book", Author = "Author C" };
-            _mockBookService.Setup(s => s.AddBookAsync(It.IsAny<Book>())).ReturnsAsync(newBook);
+            var bookDto = new BookDto
+            {
+                Id = 1,
+                Title = "New Book",
+                Author = "Author",
+                ISBN = "9876543210",
+                Genre = "Non-Fiction"
+            };
+
+            _mockBookService.Setup(s => s.AddBookAsync(It.IsAny<BookDto>())).ReturnsAsync(bookDto);
 
             // Act
-            var result = await _controller.AddBook(newBook);
+            var result = await _controller.AddBook(bookDto);
 
             // Assert
-            var createdAtAction = Assert.IsType<CreatedAtActionResult>(result.Result);
-            var returnBook = Assert.IsType<Book>(createdAtAction.Value);
-            Assert.Equal(3, returnBook.Id);
+            var actionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+            Assert.Equal("GetBookById", actionResult.ActionName);
         }
 
         [Fact]
         public async Task UpdateBook_ShouldReturnNoContent_WhenSuccessful()
         {
             // Arrange
-            var existingBook = new Book { Id = 1, Title = "Test Book" };
-            _mockBookService.Setup(s => s.GetBookByIdAsync(1)).ReturnsAsync(existingBook);
-            _mockBookService.Setup(s => s.UpdateBookAsync(existingBook)).Returns(Task.CompletedTask);
+            var bookDto = new BookDto { Id = 1, Title = "Updated Book" };
+            _mockBookService.Setup(s => s.UpdateBookAsync(1, bookDto)).ReturnsAsync(true);
 
             // Act
-            var result = await _controller.UpdateBook(1, existingBook);
+            var result = await _controller.UpdateBook(1, bookDto);
 
             // Assert
             Assert.IsType<NoContentResult>(result);
@@ -89,9 +96,7 @@ namespace LibraryManagementSystem.Tests.Controllers
         public async Task DeleteBook_ShouldReturnNoContent_WhenSuccessful()
         {
             // Arrange
-            var book = new Book { Id = 1, Title = "Test Book" };
-            _mockBookService.Setup(s => s.GetBookByIdAsync(1)).ReturnsAsync(book);
-            _mockBookService.Setup(s => s.DeleteBookAsync(1)).Returns(Task.CompletedTask);
+            _mockBookService.Setup(s => s.DeleteBookAsync(1)).ReturnsAsync(true);
 
             // Act
             var result = await _controller.DeleteBook(1);

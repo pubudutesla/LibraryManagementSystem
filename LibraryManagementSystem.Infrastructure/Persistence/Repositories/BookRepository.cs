@@ -11,12 +11,10 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
 
         public async Task<IEnumerable<Book>> GetAllAsync() => await _context.Books.ToListAsync();
 
-        public async Task<Book> GetByIdAsync(int id) => await _context.Books.FindAsync(id);
+        public async Task<Book?> GetByIdAsync(int id) => await _context.Books.FindAsync(id);
 
-        public async Task<Book> GetByISBNAsync(string isbn)
-        {
-            return await _context.Books.FirstOrDefaultAsync(b => b.ISBN == isbn);
-        }
+        public async Task<Book?> GetByISBNAsync(string isbn) =>
+            await _context.Books.FirstOrDefaultAsync(b => b.ISBN == isbn);
 
         public async Task<Book> AddAsync(Book book)
         {
@@ -26,11 +24,7 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
 
         public async Task UpdateAsync(Book book)
         {
-            var existingBook = await _context.Books.FindAsync(book.Id);
-            if (existingBook != null)
-            {
-                _context.Entry(existingBook).CurrentValues.SetValues(book);
-            }
+            _context.Books.Update(book);
         }
 
         public async Task DeleteAsync(int id)

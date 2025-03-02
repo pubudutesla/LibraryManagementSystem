@@ -29,22 +29,21 @@ namespace LibraryManagementSystem.Tests.Repositories
             // Arrange
             var book = new Book
             {
-                Title = "Test Book",
-                Author = "John Doe",
-                ISBN = "123-4567890123",
-                Genre = "Fiction",
-                PublicationYear = 2022,
-                AvailableCopies = 5
+                Id = 1,
+                Title = "Book One",
+                Author = "Author A",
+                ISBN = "1234567890",
+                Genre = "Fiction"
             };
 
             // Act
-            var addedBook = await _bookRepository.AddAsync(book);
+            await _bookRepository.AddAsync(book);
             await _context.SaveChangesAsync();
 
             // Assert
-            Assert.NotNull(addedBook);
-            Assert.Equal(book.ISBN, addedBook.ISBN);
-            Assert.Equal(book.Genre, addedBook.Genre);
+            var result = await _bookRepository.GetByIdAsync(1);
+            Assert.NotNull(result);
+            Assert.Equal("Book One", result.Title);
         }
 
         [Fact]
@@ -65,7 +64,7 @@ namespace LibraryManagementSystem.Tests.Repositories
             // Use the actual generated Id
             var result = await _bookRepository.GetByIdAsync(addedBook.Id);
             Assert.NotNull(result);
-            Assert.Equal(addedBook.Id, result.Id); // ✅ No hardcoded Id
+            Assert.Equal(addedBook.Id, result.Id);
         }
 
         [Fact]
@@ -87,8 +86,8 @@ namespace LibraryManagementSystem.Tests.Repositories
                 Id = 1,
                 Title = "Test Book",
                 Author = "John Doe",
-                ISBN = "123-4567890123", // ✅ Ensure ISBN is provided
-                Genre = "Fiction",        // ✅ Ensure Genre is provided
+                ISBN = "123-4567890123",
+                Genre = "Fiction", 
                 PublicationYear = 2022,
                 AvailableCopies = 5
             };

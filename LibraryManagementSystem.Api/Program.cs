@@ -3,6 +3,7 @@ using LibraryManagementSystem.Infrastructure.Repositories;
 using LibraryManagementSystem.Application.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using LibraryManagementSystem.Application.Mapping;
 
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
@@ -22,6 +23,7 @@ builder.Services.AddDbContext<LibraryDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var app = builder.Build();
 

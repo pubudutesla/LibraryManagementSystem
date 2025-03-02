@@ -1,13 +1,14 @@
-﻿using LibraryManagementSystem.Domain.Entities;
+﻿using LibraryManagementSystem.Application.DTOs;
+using LibraryManagementSystem.Domain.Entities;
 
 namespace LibraryManagementSystem.Application.Services
 {
     public interface IBookService
     {
-        Task<IEnumerable<Book>> GetAllBooksAsync();
-        Task<Book> GetBookByIdAsync(int id);
-        Task<Book> AddBookAsync(Book book);
-        Task UpdateBookAsync(Book book);
-        Task DeleteBookAsync(int id);
+        Task<IEnumerable<BookDto>> GetAllBooksAsync();
+        Task<BookDto> GetBookByIdAsync(int id);
+        Task<BookDto> AddBookAsync(BookDto bookDto);
+        Task<bool> UpdateBookAsync(int id, BookDto bookDto);
+        Task<bool> DeleteBookAsync(int id);
     }
 }
