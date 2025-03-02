@@ -1,0 +1,14 @@
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/bin/Debug/net8.0/LibraryManagementSystem.Tests.deps.json
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/bin/Debug/net8.0/LibraryManagementSystem.Tests.runtimeconfig.json
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/bin/Debug/net8.0/LibraryManagementSystem.Tests.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/bin/Debug/net8.0/LibraryManagementSystem.Tests.pdb
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.csproj.AssemblyReference.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.AssemblyInfoInputs.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.AssemblyInfo.cs
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.csproj.CoreCompileInputs.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/refint/LibraryManagementSystem.Tests.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.pdb
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.genruntimeconfig.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/ref/LibraryManagementSystem.Tests.dll

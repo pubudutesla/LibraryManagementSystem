@@ -1,0 +1,17 @@
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Application.deps.json
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Application.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Application.pdb
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Domain.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Infrastructure.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Domain.pdb
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/bin/Debug/net8.0/LibraryManagementSystem.Infrastructure.pdb
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.csproj.AssemblyReference.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.AssemblyInfoInputs.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.AssemblyInfo.cs
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.csproj.CoreCompileInputs.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.csproj.CopyComplete
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/refint/LibraryManagementSystem.Application.dll
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.pdb
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/ref/LibraryManagementSystem.Application.dll
