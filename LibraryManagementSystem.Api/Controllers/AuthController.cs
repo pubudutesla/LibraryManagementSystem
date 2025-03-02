@@ -1,4 +1,5 @@
 ﻿using LibraryManagementSystem.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Api.Controllers
@@ -14,6 +15,7 @@ namespace LibraryManagementSystem.Api.Controllers
             _authService = authService;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
