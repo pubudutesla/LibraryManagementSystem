@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using LibraryManagementSystem.Application.Services;
 using LibraryManagementSystem.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LibraryManagementSystem.Api.Controllers
 {
+    [Authorize]
     [Route("api/books")]
     [ApiController]
     public class BookController : ControllerBase
@@ -12,6 +14,7 @@ namespace LibraryManagementSystem.Api.Controllers
 
         public BookController(IBookService service) => _service = service;
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
@@ -27,6 +30,8 @@ namespace LibraryManagementSystem.Api.Controllers
             return Ok(book);
         }
 
+        // Requires 'Librarian' or 'Admin' role
+        [Authorize(Policy = "LibrarianOrAdmin")]
         [HttpPost]
         public async Task<ActionResult<BookDto>> AddBook(BookDto bookDto)
         {
@@ -34,6 +39,8 @@ namespace LibraryManagementSystem.Api.Controllers
             return CreatedAtAction(nameof(GetBookById), new { id = addedBook.Id }, addedBook);
         }
 
+        // Requires 'Admin' role
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBook(int id, BookDto bookDto)
         {
@@ -42,6 +49,8 @@ namespace LibraryManagementSystem.Api.Controllers
             return NoContent();
         }
 
+        // Requires 'Admin' role
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
