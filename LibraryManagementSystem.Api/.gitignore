@@ -403,3 +403,25 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# Ignore build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+
+# Ignore Visual Studio Code settings
+.vscode/
+.idea/
+*.swp
+
+# Ignore macOS files
+.DS_Store
+
+# Ignore logs, coverage, and dependencies
+logs/
+*.log
+coverage/
+node_modules/
