@@ -7,6 +7,7 @@
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.AssemblyInfoInputs.cache
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.AssemblyInfo.cs
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.csproj.CoreCompileInputs.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.sourcelink.json
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.dll
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/refint/LibraryManagementSystem.Tests.dll
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Tests/obj/Debug/net8.0/LibraryManagementSystem.Tests.pdb

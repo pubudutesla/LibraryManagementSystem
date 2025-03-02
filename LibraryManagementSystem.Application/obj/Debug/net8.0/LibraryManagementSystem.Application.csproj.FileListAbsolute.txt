@@ -10,6 +10,7 @@
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.AssemblyInfoInputs.cache
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.AssemblyInfo.cs
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.csproj.CoreCompileInputs.cache
+/Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.sourcelink.json
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.csproj.CopyComplete
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/LibraryManagementSystem.Application.dll
 /Users/pubudusenarathne/Developer/JPP/LibraryManagementSystem.Application/obj/Debug/net8.0/refint/LibraryManagementSystem.Application.dll
