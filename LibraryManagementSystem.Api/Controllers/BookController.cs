@@ -11,13 +11,19 @@ namespace LibraryManagementSystem.Api.Controllers
     public class BookController : ControllerBase
     {
         private readonly IBookService _service;
+        private readonly ILogger<BookController> _logger;
 
-        public BookController(IBookService service) => _service = service;
+        public BookController(IBookService service, ILogger<BookController> logger)
+        {
+            _service = service;
+            _logger = logger;
+        }
 
         [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
+            _logger.LogInformation("Fetching all books");
             var books = await _service.GetAllBooksAsync();
             return Ok(books);
         }
@@ -25,8 +31,13 @@ namespace LibraryManagementSystem.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDto>> GetBookById(int id)
         {
+            _logger.LogInformation("Fetching book with ID {Id}", id);
             var book = await _service.GetBookByIdAsync(id);
-            if (book == null) return NotFound();
+            if (book == null)
+            {
+                _logger.LogWarning("Book with ID {Id} not found", id);
+                return NotFound();
+            }
             return Ok(book);
         }
 
@@ -35,6 +46,7 @@ namespace LibraryManagementSystem.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<BookDto>> AddBook(BookDto bookDto)
         {
+            _logger.LogInformation("Adding new book: {Title}", bookDto.Title);
             var addedBook = await _service.AddBookAsync(bookDto);
             return CreatedAtAction(nameof(GetBookById), new { id = addedBook.Id }, addedBook);
         }
@@ -44,8 +56,13 @@ namespace LibraryManagementSystem.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBook(int id, BookDto bookDto)
         {
+            _logger.LogInformation("Updating book with ID {Id}", id);
             var success = await _service.UpdateBookAsync(id, bookDto);
-            if (!success) return NotFound();
+            if (!success)
+            {
+                _logger.LogError("Failed to update book with ID {Id}. Not found.", id);
+                return NotFound();
+            }
             return NoContent();
         }
 
@@ -54,8 +71,13 @@ namespace LibraryManagementSystem.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
+            _logger.LogInformation("Deleting book with ID {Id}", id);
             var success = await _service.DeleteBookAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+            {
+                _logger.LogError("Failed to delete book with ID {Id}. Not found.", id);
+                return NotFound();
+            }
             return NoContent();
         }
     }
