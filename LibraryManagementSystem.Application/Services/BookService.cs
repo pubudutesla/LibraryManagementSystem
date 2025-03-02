@@ -33,6 +33,9 @@ namespace LibraryManagementSystem.Application.Services
 
         public async Task UpdateBookAsync(Book book)
         {
+            var existingBook = await _bookRepository.GetByIdAsync(book.Id);
+            if (existingBook == null) throw new KeyNotFoundException("Book not found");
+
             await _bookRepository.UpdateAsync(book);
             await _unitOfWork.SaveChangesAsync();
         }

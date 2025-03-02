@@ -24,15 +24,18 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Book>> AddBook(Book book) => Ok(await _service.AddBookAsync(book));
+        public async Task<ActionResult<Book>> AddBook(Book book)
+        {
+            var addedBook = await _service.AddBookAsync(book);
+            return CreatedAtAction(nameof(GetBookById), new { id = addedBook.Id }, addedBook);
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBook(int id, Book book)
         {
-            if (id != book.Id) return BadRequest("ID mismatch");
-
             var existingBook = await _service.GetBookByIdAsync(id);
-            if (existingBook == null) return NotFound();
+            if (existingBook == null)
+                return NotFound();
 
             await _service.UpdateBookAsync(book);
             return NoContent();
@@ -41,8 +44,9 @@ namespace LibraryManagementSystem.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
-            var existingBook = await _service.GetBookByIdAsync(id);
-            if (existingBook == null) return NotFound();
+            var book = await _service.GetBookByIdAsync(id);
+            if (book == null)
+                return NotFound();
 
             await _service.DeleteBookAsync(id);
             return NoContent();
