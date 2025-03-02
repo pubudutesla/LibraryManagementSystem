@@ -1,8 +1,6 @@
 ﻿using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Infrastructure.Repositories
 {
@@ -15,6 +13,11 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
 
         public async Task<Book> GetByIdAsync(int id) => await _context.Books.FindAsync(id);
 
+        public async Task<Book> GetByISBNAsync(string isbn)
+        {
+            return await _context.Books.FirstOrDefaultAsync(b => b.ISBN == isbn);
+        }
+
         public async Task<Book> AddAsync(Book book)
         {
             await _context.Books.AddAsync(book);
@@ -23,7 +26,11 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
 
         public async Task UpdateAsync(Book book)
         {
-            _context.Books.Update(book);
+            var existingBook = await _context.Books.FindAsync(book.Id);
+            if (existingBook != null)
+            {
+                _context.Entry(existingBook).CurrentValues.SetValues(book);
+            }
         }
 
         public async Task DeleteAsync(int id)

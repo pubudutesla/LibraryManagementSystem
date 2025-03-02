@@ -1,5 +1,4 @@
 ﻿using LibraryManagementSystem.Infrastructure.Persistence;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Infrastructure.Repositories
 {
@@ -15,6 +14,12 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
         }
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
+
+        public async Task BeginTransactionAsync() => await _context.Database.BeginTransactionAsync();
+
+        public async Task CommitTransactionAsync() => await _context.Database.CommitTransactionAsync();
+
+        public async Task RollbackTransactionAsync() => await _context.Database.RollbackTransactionAsync();
 
         public void Dispose() => _context.Dispose();
     }

@@ -20,12 +20,12 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Repositories\" />
     <None Remove="Persistence\" />
+    <None Remove="Persistence\Repositories\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Repositories\" />
     <Folder Include="Persistence\" />
+    <Folder Include="Persistence\Repositories\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibraryManagementSystem.Domain\LibraryManagementSystem.Domain.csproj" />

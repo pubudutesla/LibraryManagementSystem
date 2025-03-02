@@ -1,36 +1,45 @@
 ﻿using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Application.Services
 {
     public class BookService : IBookService
-    {//sdsdd
+    {
+        private readonly IBookRepository _bookRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public BookService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        public BookService(IBookRepository bookRepository, IUnitOfWork unitOfWork)
+        {
+            _bookRepository = bookRepository;
+            _unitOfWork = unitOfWork;
+        }
 
-        public async Task<IEnumerable<Book>> GetAllBooksAsync() => await _unitOfWork.Books.GetAllAsync();
+        public async Task<IEnumerable<Book>> GetAllBooksAsync() => await _bookRepository.GetAllAsync();
 
-        public async Task<Book> GetBookByIdAsync(int id) => await _unitOfWork.Books.GetByIdAsync(id);
+        public async Task<Book> GetBookByIdAsync(int id) => await _bookRepository.GetByIdAsync(id);
 
         public async Task<Book> AddBookAsync(Book book)
         {
-            var newBook = await _unitOfWork.Books.AddAsync(book);
+            var existingBook = await _bookRepository.GetByISBNAsync(book.ISBN);
+            if (existingBook != null)
+            {
+                throw new InvalidOperationException($"A book with ISBN '{book.ISBN}' already exists.");
+            }
+
+            var newBook = await _bookRepository.AddAsync(book);
             await _unitOfWork.SaveChangesAsync();
             return newBook;
         }
 
         public async Task UpdateBookAsync(Book book)
         {
-            await _unitOfWork.Books.UpdateAsync(book);
+            await _bookRepository.UpdateAsync(book);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteBookAsync(int id)
         {
-            await _unitOfWork.Books.DeleteAsync(id);
+            await _bookRepository.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
     }

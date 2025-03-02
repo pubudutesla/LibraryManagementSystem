@@ -6,6 +6,7 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
     {
         Task<IEnumerable<Book>> GetAllAsync();
         Task<Book> GetByIdAsync(int id);
+        Task<Book> GetByISBNAsync(string isbn);
         Task<Book> AddAsync(Book book);
         Task UpdateAsync(Book book);
         Task DeleteAsync(int id);
