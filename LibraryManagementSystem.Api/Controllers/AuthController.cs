@@ -1,6 +1,6 @@
-﻿using LibraryManagementSystem.Application.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using LibraryManagementSystem.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Api.Controllers
 {
@@ -10,25 +10,16 @@ namespace LibraryManagementSystem.Api.Controllers
     {
         private readonly IAuthService _authService;
 
-        public AuthController(IAuthService authService)
-        {
-            _authService = authService;
-        }
+        public AuthController(IAuthService authService) => _authService = authService;
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = _authService.Authenticate(request.Username, request.Password);
-            if (token == null) return Unauthorized(new { message = "Invalid credentials" });
+            var token = await _authService.Authenticate(request.Username, request.Password);
+            if (token == null) return Unauthorized("Invalid username or password");
 
-            return Ok(new { token });
+            return Ok(new { Token = token });
         }
-    }
-
-    public class LoginRequest
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
     }
 }

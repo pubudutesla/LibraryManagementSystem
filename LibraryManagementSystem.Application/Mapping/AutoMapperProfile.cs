@@ -9,6 +9,9 @@ namespace LibraryManagementSystem.Application.Mapping
         public AutoMapperProfile()
         {
             CreateMap<Book, BookDto>().ReverseMap();
+            CreateMap<Member, MemberResponseDto>();
+            CreateMap<MemberRegistrationDto, Member>()
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
         }
     }
 }

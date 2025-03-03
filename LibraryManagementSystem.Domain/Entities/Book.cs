@@ -1,5 +1,8 @@
-﻿namespace LibraryManagementSystem.Domain.Entities
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace LibraryManagementSystem.Domain.Entities
 {
+    [Index(nameof(ISBN), IsUnique = true)]
     public class Book
     {
         public int Id { get; set; }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using LibraryManagementSystem.Api.Controllers;
 using LibraryManagementSystem.Application.Services;
 using LibraryManagementSystem.Application.DTOs;
+using Microsoft.Extensions.Logging;
 
 namespace LibraryManagementSystem.Tests.Controllers
 {
@@ -14,11 +15,13 @@ namespace LibraryManagementSystem.Tests.Controllers
     {
         private readonly Mock<IBookService> _mockBookService;
         private readonly BookController _controller;
+        private readonly Mock<ILogger<BookController>> _mockLogger;
 
         public BookControllerTests()
         {
             _mockBookService = new Mock<IBookService>();
-            _controller = new BookController(_mockBookService.Object);
+            _mockLogger = new Mock<ILogger<BookController>>();
+            _controller = new BookController(_mockBookService.Object, _mockLogger.Object);
         }
 
         [Fact]

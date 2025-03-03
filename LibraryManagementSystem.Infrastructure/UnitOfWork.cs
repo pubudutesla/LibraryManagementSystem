@@ -6,11 +6,13 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
     {
         private readonly LibraryDbContext _context;
         public IBookRepository Books { get; }
+        public IMemberRepository Members { get; }
 
-        public UnitOfWork(LibraryDbContext context, IBookRepository bookRepository)
+        public UnitOfWork(LibraryDbContext context, IBookRepository bookRepository, IMemberRepository memberRepository)
         {
             _context = context;
             Books = bookRepository;
+            Members = memberRepository;
         }
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();

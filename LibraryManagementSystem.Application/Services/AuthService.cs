@@ -1,52 +1,71 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using LibraryManagementSystem.Domain.Entities;
-using Microsoft.Extensions.Configuration;
+using LibraryManagementSystem.Infrastructure.Repositories;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+
+public interface IAuthService
+{
+    Task<string?> Authenticate(string username, string password);
+}
 
 namespace LibraryManagementSystem.Application.Services
 {
-    public interface IAuthService
-    {
-        string Authenticate(string username, string password);
-    }
-
     public class AuthService : IAuthService
     {
-        private readonly IConfiguration _config;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
 
-        // Hardcoded users for testing (Replace with DB later)
-        private readonly List<User> _users = new()
+        public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
-            new User { Id = 1, Username = "admin", Password = "admin123", Role = "Admin" },
-            new User { Id = 2, Username = "librarian", Password = "lib123", Role = "Librarian" }
-        };
-
-        public AuthService(IConfiguration config)
-        {
-            _config = config;
+            _unitOfWork = unitOfWork;
+            _configuration = configuration;
         }
 
-        public string Authenticate(string username, string password)
+        public async Task<string?> Authenticate(string username, string password)
         {
-            var user = _users.SingleOrDefault(u => u.Username == username && u.Password == password);
-            if (user == null) return null;
+            var member = await _unitOfWork.Members.GetByUsernameAsync(username);
 
-            // Generate JWT Token
+            if (member == null || !VerifyPassword(password, member.PasswordHash))
+                return null;
+
+            return GenerateJwtToken(member);
+        }
+
+        private bool VerifyPassword(string password, string storedHash)
+        {
+            return storedHash == HashPassword(password); // Compare hash of input password
+        }
+
+        public static string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(bytes);
+        }
+
+        private string GenerateJwtToken(Member member)
+        {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]);
+            var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, member.Username),
+                new Claim(ClaimTypes.Role, member.MembershipType.ToString())
+            };
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.Role, user.Role)
-                }),
-                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["JwtSettings:ExpiryMinutes"])),
-                Issuer = _config["JwtSettings:Issuer"],
-                Audience = _config["JwtSettings:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["JwtSettings:ExpiryMinutes"])),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _configuration["JwtSettings:Issuer"],
+                Audience = _configuration["JwtSettings:Audience"]
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);

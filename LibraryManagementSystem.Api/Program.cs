@@ -71,6 +71,8 @@ builder.Services.AddDbContext<LibraryDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -115,6 +117,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
     options.AddPolicy("LibrarianOrAdmin", policy => policy.RequireRole("Librarian", "Admin"));
+    options.AddPolicy("MemberOnly", policy => policy.RequireRole("Member"));
 });
 
 var app = builder.Build();
