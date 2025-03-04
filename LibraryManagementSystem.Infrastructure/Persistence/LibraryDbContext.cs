@@ -9,6 +9,7 @@ namespace LibraryManagementSystem.Infrastructure.Persistence
 
         public DbSet<Book> Books { get; set; } = null!;
         public DbSet<Member> Members { get; set; } = null!;
+        public DbSet<Loan> Loans { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

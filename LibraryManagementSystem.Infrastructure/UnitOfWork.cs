@@ -1,4 +1,5 @@
-﻿using LibraryManagementSystem.Infrastructure.Persistence;
+﻿using LibraryManagementSystem.Domain.Entities;
+using LibraryManagementSystem.Infrastructure.Persistence;
 
 namespace LibraryManagementSystem.Infrastructure.Repositories
 {
@@ -7,12 +8,14 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
         private readonly LibraryDbContext _context;
         public IBookRepository Books { get; }
         public IMemberRepository Members { get; }
+        public ILoanRepository Loans { get; }
 
         public UnitOfWork(LibraryDbContext context, IBookRepository bookRepository, IMemberRepository memberRepository)
         {
             _context = context;
             Books = bookRepository;
             Members = memberRepository;
+            Loans = new LoanRepository(context);
         }
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();

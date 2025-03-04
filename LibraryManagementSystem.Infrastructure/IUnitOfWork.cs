@@ -4,6 +4,8 @@
     {
         IBookRepository Books { get; }
         IMemberRepository Members { get; }
+        ILoanRepository Loans { get; }
+
         Task<int> SaveChangesAsync();
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
