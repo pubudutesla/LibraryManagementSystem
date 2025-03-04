@@ -7,6 +7,7 @@ namespace LibraryManagementSystem.Application.Services
         Task<IEnumerable<LoanResponseDto>> GetAllLoansAsync();
         Task<LoanResponseDto?> GetLoanByIdAsync(int id);
         Task<LoanResponseDto> CreateLoanAsync(LoanRequestDto loanDto);
+        Task<IEnumerable<LoanResponseDto>> GetLoansByMemberIdAsync(int memberId);
         Task<bool> ReturnBookAsync(int id);
     }
 }

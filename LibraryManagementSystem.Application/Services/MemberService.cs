@@ -98,7 +98,6 @@ namespace LibraryManagementSystem.Application.Services
             return true;
         }
 
-        // ✅ Manual SHA-256 password hashing (No external libraries)
         private string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();

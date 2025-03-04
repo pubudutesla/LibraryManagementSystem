@@ -31,7 +31,11 @@ namespace LibraryManagementSystem.Infrastructure.Repositories
 
         public async Task<IEnumerable<Loan>> GetLoansByMemberIdAsync(int memberId)
         {
-            return await _context.Loans.Where(l => l.MemberId == memberId).ToListAsync();
+            return await _context.Loans
+                .Include(l => l.Book)  // 🔹 Fetch related Book
+                .Include(l => l.Member) // 🔹 Fetch related Member
+                .Where(l => l.MemberId == memberId)
+                .ToListAsync();
         }
 
         public async Task AddAsync(Loan loan)

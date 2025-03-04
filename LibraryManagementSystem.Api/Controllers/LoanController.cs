@@ -33,6 +33,18 @@ namespace LibraryManagementSystem.Api.Controllers
             return Ok(loan);
         }
 
+        [HttpGet("member/{memberId}")]
+        [Authorize(Roles = "Member, Librarian, Admin")]
+        public async Task<ActionResult<IEnumerable<LoanResponseDto>>> GetLoansByMemberId(int memberId)
+        {
+            var loans = await _service.GetLoansByMemberIdAsync(memberId);
+
+            if (!loans.Any())
+                return NotFound($"No loans found for member ID {memberId}.");
+
+            return Ok(loans);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Member")]
         public async Task<ActionResult<LoanResponseDto>> CreateLoan(LoanRequestDto loanDto)
