@@ -10,11 +10,13 @@
     <None Remove="Services\" />
     <None Remove="DTOs\" />
     <None Remove="Mapping\" />
+    <None Remove="Common\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
     <Folder Include="DTOs\" />
     <Folder Include="Mapping\" />
+    <Folder Include="Common\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LibraryManagementSystem.Domain\LibraryManagementSystem.Domain.csproj" />

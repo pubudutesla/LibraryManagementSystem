@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using LibraryManagementSystem.Application.Common;
 
 namespace LibraryManagementSystem.Api.Middleware
 {
@@ -26,15 +27,15 @@ namespace LibraryManagementSystem.Api.Middleware
             {
                 _logger.LogError(ex, "Unhandled exception occurred.");
 
-                // Default to 500 unless we handle it below
+                // Default to 500 Internal Server Error
                 var statusCode = HttpStatusCode.InternalServerError;
                 var message = "An unexpected error occurred. Please try again later.";
 
-                // Example: handle certain exceptions more specifically
+                // Handle specific exceptions
                 if (ex is KeyNotFoundException)
                 {
                     statusCode = HttpStatusCode.NotFound;
-                    message = ex.Message; // or a generic "Resource not found" message
+                    message = ex.Message; // Or use a generic message like "Resource not found"
                 }
                 else if (ex is ArgumentException)
                 {
@@ -47,16 +48,11 @@ namespace LibraryManagementSystem.Api.Middleware
                     message = ex.Message;
                 }
 
-                // Prepare response
+                // Prepare standardized API response
+                var response = ApiResponse<object>.ErrorResponse(message, new List<string> { $"Status Code: {(int)statusCode}" });
+
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)statusCode;
-
-                var response = new
-                {
-                    statusCode = context.Response.StatusCode,
-                    message = message
-                    // For production, you might omit ex.Message to avoid leaking sensitive details.
-                };
 
                 var jsonResponse = JsonSerializer.Serialize(response);
                 await context.Response.WriteAsync(jsonResponse);

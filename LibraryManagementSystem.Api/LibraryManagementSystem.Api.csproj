@@ -38,8 +38,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Middleware\" />
+    <None Remove="Auth\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Middleware\" />
+    <Folder Include="Auth\" />
   </ItemGroup>
 </Project>

@@ -56,7 +56,6 @@ namespace LibraryManagementSystem.Application.Services
             {
                 new Claim(ClaimTypes.Name, member.Username),
                 new Claim(ClaimTypes.Role, member.MembershipType.ToString()),
-                //new Claim("Permission", "ManageLoans")
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

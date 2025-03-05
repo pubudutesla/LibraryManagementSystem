@@ -1,12 +1,15 @@
 ﻿using System.Globalization;
 using System.Text;
 using System.Threading.RateLimiting;
+using LibraryManagementSystem.Api.Auth;
 using LibraryManagementSystem.Api.Middleware;
 using LibraryManagementSystem.Application.Mapping;
 using LibraryManagementSystem.Application.Services;
 using LibraryManagementSystem.Infrastructure.Persistence;
 using LibraryManagementSystem.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -56,7 +59,27 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        // Collect all validation messages
+        var errors = context.ModelState
+            .Where(entry => entry.Value.Errors.Any())
+            .SelectMany(entry => entry.Value.Errors)
+            .Select(err => err.ErrorMessage)
+            .ToList();
+
+        // Build your custom error response
+        var response = LibraryManagementSystem.Application.Common.ApiResponse<object>.ErrorResponse(
+            "One or more validation errors occurred.",
+            errors
+        );
+
+        // Return 400 with your custom ApiResponse
+        return new BadRequestObjectResult(response);
+    };
+}); ;
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger configuration
@@ -107,6 +130,9 @@ builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+//perm
+builder.Services.AddSingleton<IAuthorizationHandler, RolesHandler>();
+
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -142,7 +168,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("LibrarianOrAdmin", policy => policy.RequireRole("Librarian", "Admin"));
     options.AddPolicy("MemberOnly", policy => policy.RequireRole("Member"));
     options.AddPolicy("MemberOrAdmin", policy => policy.RequireRole("Member", "Admin"));
-    //options.AddPolicy("CanManageLoans", policy => policy.RequireClaim("Permission", "ManageLoans"));
 });
 
 var app = builder.Build();
