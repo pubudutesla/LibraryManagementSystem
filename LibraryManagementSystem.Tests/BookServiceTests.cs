@@ -44,16 +44,8 @@ namespace LibraryManagementSystem.Tests.Services
                 AvailableCopies = 5
             };
 
-            var book = new Book
-            {
-                Id = 3,
-                Title = "New Book",
-                Author = "Author C",
-                ISBN = "1234567890",
-                Genre = "Fiction",
-                PublicationYear = 2022,
-                AvailableCopies = 5
-            };
+            // We create the domain Book matching the above fields:
+            var book = new Book("New Book", "Author C", "1234567890", "Fiction", 2022, 5);
 
             _mockMapper.Setup(m => m.Map<Book>(bookDto)).Returns(book);
             _mockBookRepository.Setup(r => r.AddAsync(It.IsAny<Book>())).ReturnsAsync(book);
@@ -76,25 +68,17 @@ namespace LibraryManagementSystem.Tests.Services
             // Arrange: Ensure Title, Author, and ISBN are not empty
             var bookDto = new BookDto
             {
-                Id = 1,
-                Title = "Updated Book",
-                Author = "Author X",
-                ISBN = "0987654321",
-                Genre = "Non-Fiction",
-                PublicationYear = 2020,
-                AvailableCopies = 2
+                Id = 3,
+                Title = "New Book",
+                Author = "Author C",
+                ISBN = "1234567890",
+                Genre = "Fiction",
+                PublicationYear = 2022,
+                AvailableCopies = 5
             };
 
-            var book = new Book
-            {
-                Id = 1,
-                Title = "Old Book",
-                Author = "Author Y",
-                ISBN = "0987654321",
-                Genre = "Non-Fiction",
-                PublicationYear = 2020,
-                AvailableCopies = 2
-            };
+            // We create the domain Book matching the above fields:
+            var book = new Book("New Book", "Author C", "1234567890", "Fiction", 2022, 5);
 
             _mockBookRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(book);
             _mockMapper.Setup(m => m.Map(bookDto, book));

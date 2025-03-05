@@ -15,12 +15,16 @@ namespace LibraryManagementSystem.Tests.Services
     public class MemberServiceTests
     {
         private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+        private readonly Mock<IMemberRepository> _mockMemberRepository;
         private readonly IMapper _mapper;
         private readonly MemberService _memberService;
 
         public MemberServiceTests()
         {
             _mockUnitOfWork = new Mock<IUnitOfWork>();
+            _mockMemberRepository = new Mock<IMemberRepository>();
+
+            _mockUnitOfWork.Setup(u => u.Members).Returns(_mockMemberRepository.Object);
 
             var mapperConfig = new MapperConfiguration(cfg =>
             {
@@ -37,10 +41,10 @@ namespace LibraryManagementSystem.Tests.Services
             // Arrange
             var members = new List<Member>
             {
-                new Member { Id = 1, Username = "admin", Name = "Admin User", MembershipType = MembershipType.Admin },
-                new Member { Id = 2, Username = "librarian", Name = "Librarian User", MembershipType = MembershipType.Librarian }
+                new Member("admin", "Admin User", "admin@example.com", "hashedpassword", MembershipType.Admin),
+                new Member("librarian", "Librarian User", "librarian@example.com", "hashedpassword", MembershipType.Librarian)
             };
-            _mockUnitOfWork.Setup(u => u.Members.GetAllAsync()).ReturnsAsync(members);
+            _mockMemberRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(members);
 
             // Act
             var result = await _memberService.GetAllMembersAsync();
@@ -54,8 +58,12 @@ namespace LibraryManagementSystem.Tests.Services
         public async Task GetMemberByIdAsync_ShouldReturnMember_WhenExists()
         {
             // Arrange
-            var member = new Member { Id = 1, Username = "admin", Name = "Admin User", MembershipType = MembershipType.Admin };
-            _mockUnitOfWork.Setup(u => u.Members.GetByIdAsync(1)).ReturnsAsync(member);
+            var member = new Member("admin", "Admin User", "admin@example.com", "passhash", MembershipType.Admin);
+            // Suppose EF set an Id if needed:
+            var memberType = typeof(Member);
+            memberType.GetProperty(nameof(Member.Id))!.SetValue(member, 1);
+
+            _mockMemberRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(member);
 
             // Act
             var result = await _memberService.GetMemberByIdAsync(1);
@@ -74,10 +82,13 @@ namespace LibraryManagementSystem.Tests.Services
                 Username = "admin",
                 Name = "Admin User",
                 MembershipType = "Admin",
-                Password = "pass123"
+                Password = "pass123",
+                Email = "admin@example.com"
             };
 
-            _mockUnitOfWork.Setup(u => u.Members.GetByUsernameAsync("admin")).ReturnsAsync(new Member());
+            _mockMemberRepository.Setup(r => r.GetByUsernameAsync("admin")).ReturnsAsync(
+                new Member("admin", "Admin User", "admin@example.com", "hash", MembershipType.Admin)
+            );
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _memberService.AddMemberAsync(registrationDto));
@@ -92,11 +103,11 @@ namespace LibraryManagementSystem.Tests.Services
                 Username = "newuser",
                 Name = "New User",
                 MembershipType = "Member",
-                Password = "securepassword"
+                Password = "securepassword",
+                Email = "newuser@example.com"
             };
 
-            _mockUnitOfWork.Setup(u => u.Members.GetByUsernameAsync("newuser")).ReturnsAsync((Member)null);
-            _mockUnitOfWork.Setup(u => u.Members.AddAsync(It.IsAny<Member>()));
+            _mockMemberRepository.Setup(r => r.GetByUsernameAsync("newuser")).ReturnsAsync((Member?)null);
 
             // Act
             var result = await _memberService.AddMemberAsync(registrationDto);
@@ -111,10 +122,12 @@ namespace LibraryManagementSystem.Tests.Services
         {
             // Arrange
             var updateDto = new MemberUpdateDto { Name = "Updated Name" };
-            var existingMember = new Member { Id = 1, Username = "admin", Name = "Old Name", MembershipType = MembershipType.Admin };
+            var existingMember = new Member("admin", "Old Name", "admin@example.com", "passhash", MembershipType.Admin);
+            var memberType = typeof(Member);
+            memberType.GetProperty(nameof(Member.Id))!.SetValue(existingMember, 1);
 
-            _mockUnitOfWork.Setup(u => u.Members.GetByIdAsync(1)).ReturnsAsync(existingMember);
-            _mockUnitOfWork.Setup(u => u.Members.UpdateAsync(existingMember));
+            _mockMemberRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existingMember);
+            _mockMemberRepository.Setup(r => r.UpdateAsync(existingMember));
 
             // Act
             var result = await _memberService.UpdateMemberAsync(1, updateDto);
@@ -128,7 +141,7 @@ namespace LibraryManagementSystem.Tests.Services
         public async Task DeleteMemberAsync_ShouldReturnFalse_WhenMemberDoesNotExist()
         {
             // Arrange
-            _mockUnitOfWork.Setup(u => u.Members.GetByIdAsync(1)).ReturnsAsync((Member)null);
+            _mockMemberRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Member?)null);
 
             // Act
             var result = await _memberService.DeleteMemberAsync(1);

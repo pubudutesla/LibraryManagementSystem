@@ -30,36 +30,45 @@ namespace LibraryManagementSystem.Application.Services
 
         public async Task<BookDto> AddBookAsync(BookDto bookDto)
         {
-            if (string.IsNullOrEmpty(bookDto.Title) || string.IsNullOrEmpty(bookDto.Author) || string.IsNullOrEmpty(bookDto.ISBN))
-                throw new ArgumentException("Title, Author, and ISBN are required fields.");
+            ValidateBookDto(bookDto);
 
+            // Check duplicate ISBN
             var existingBook = await _unitOfWork.Books.GetByISBNAsync(bookDto.ISBN);
             if (existingBook != null)
                 throw new InvalidOperationException("A book with this ISBN already exists.");
 
+            // In case the DTO has an ID set incorrectly
             bookDto.Id = null;
 
             var book = _mapper.Map<Book>(bookDto);
+
             var addedBook = await _unitOfWork.Books.AddAsync(book);
             await _unitOfWork.SaveChangesAsync();
+
             return _mapper.Map<BookDto>(addedBook);
         }
 
         public async Task<bool> UpdateBookAsync(int id, BookDto bookDto)
         {
+            ValidateBookDto(bookDto);
+
             var existingBook = await _unitOfWork.Books.GetByIdAsync(id);
-            if (existingBook == null) return false;
+            if (existingBook == null)
+            {
+                return false; // The controller returns 404
+            }
 
-            if (string.IsNullOrEmpty(bookDto.Title) || string.IsNullOrEmpty(bookDto.Author) || string.IsNullOrEmpty(bookDto.ISBN))
-                throw new ArgumentException("Title, Author, and ISBN are required fields.");
-
-            var bookWithSameISBN = await _unitOfWork.Books.GetByISBNAsync(bookDto.ISBN);
-            if (bookWithSameISBN != null && bookWithSameISBN.Id != id)
+            // Check if new ISBN conflicts with a different book
+            var bookWithSameIsbn = await _unitOfWork.Books.GetByISBNAsync(bookDto.ISBN);
+            if (bookWithSameIsbn != null && bookWithSameIsbn.Id != id)
                 throw new InvalidOperationException("A book with this ISBN already exists.");
 
+            // Map new values onto the entity
             _mapper.Map(bookDto, existingBook);
+
             await _unitOfWork.Books.UpdateAsync(existingBook);
             await _unitOfWork.SaveChangesAsync();
+
             return true;
         }
 
@@ -73,5 +82,16 @@ namespace LibraryManagementSystem.Application.Services
             return true;
         }
 
+        private void ValidateBookDto(BookDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title is required.");
+
+            if (string.IsNullOrWhiteSpace(dto.Author))
+                throw new ArgumentException("Author is required.");
+
+            if (string.IsNullOrWhiteSpace(dto.ISBN))
+                throw new ArgumentException("ISBN is required.");
+        }
     }
 }

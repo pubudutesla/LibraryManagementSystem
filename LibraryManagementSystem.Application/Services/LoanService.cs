@@ -36,70 +36,55 @@ namespace LibraryManagementSystem.Application.Services
 
         public async Task<LoanResponseDto> CreateLoanAsync(LoanRequestDto loanDto)
         {
-            // Check if the book exists
-            var book = await _unitOfWork.Books.GetByIdAsync(loanDto.BookId);
-            if (book == null)
-                throw new ArgumentException("The requested book does not exist.");
+            // Basic checks
+            var book = await _unitOfWork.Books.GetByIdAsync(loanDto.BookId)
+                ?? throw new KeyNotFoundException("The requested book does not exist.");
 
-            // Check if the book has available copies
             if (book.AvailableCopies <= 0)
-                throw new InvalidOperationException("No available copies of the book.");
+                throw new InvalidOperationException("No available copies of this book.");
 
-            // Check if the member exists
-            var member = await _unitOfWork.Members.GetByIdAsync(loanDto.MemberId);
-            if (member == null)
-                throw new ArgumentException("Invalid member ID.");
+            var member = await _unitOfWork.Members.GetByIdAsync(loanDto.MemberId)
+                ?? throw new KeyNotFoundException("Invalid member ID.");
 
             // Check if the member already has an active loan for this book
-            var existingLoan = await _unitOfWork.Loans
-                .GetLoansByMemberIdAsync(loanDto.MemberId);
-
-            bool alreadyBorrowed = existingLoan.Any(l => l.BookId == loanDto.BookId && l.ReturnDate == null);
+            var existingLoans = await _unitOfWork.Loans.GetLoansByMemberIdAsync(member.Id);
+            bool alreadyBorrowed = existingLoans.Any(l => l.BookId == book.Id && l.ReturnDate == null);
             if (alreadyBorrowed)
-                throw new InvalidOperationException("This book is already borrowed by the member and has not been returned.");
+                throw new InvalidOperationException("This book is already borrowed by the member.");
 
-            var loan = new Loan
-            {
-                BookId = loanDto.BookId,
-                MemberId = loanDto.MemberId,
-                LoanDate = DateTime.UtcNow,
-                DueDate = DateTime.UtcNow.AddDays(14), // Default loan period
-                ReturnDate = null
-            };
+            // Create new domain Loan object
+            // Domain constructor ensures we can’t create an invalid loan
+            var loan = new Loan(
+                bookId: book.Id,
+                memberId: member.Id,
+                loanDate: DateTime.UtcNow,
+                dueDate: DateTime.UtcNow.AddDays(14)
+            );
 
+            // Add to UoW
             await _unitOfWork.Loans.AddAsync(loan);
 
-            // Reduce available copies
+            // Decrement the Book’s available copies
             book.AvailableCopies--;
-
             await _unitOfWork.SaveChangesAsync();
 
-            // Return loan details
             return _mapper.Map<LoanResponseDto>(loan);
         }
 
         public async Task<bool> ReturnBookAsync(int loanId)
         {
-            // Check if the loan exists
             var loan = await _unitOfWork.Loans.GetByIdAsync(loanId);
-            if (loan == null) return false;
+            if (loan == null) return false; // Let controller return 404
 
-            // Check if the book exists
-            var book = await _unitOfWork.Books.GetByIdAsync(loan.BookId);
-            if (book == null)
-                throw new ArgumentException("The book associated with this loan does not exist.");
+            var book = await _unitOfWork.Books.GetByIdAsync(loan.BookId)
+                ?? throw new KeyNotFoundException("The book associated with this loan does not exist.");
 
-            // Check if the loan has already been returned
-            if (loan.ReturnDate != null)
-                throw new InvalidOperationException("This loan has already been returned.");
+            // Use domain method to mark as returned
+            loan.MarkAsReturned();
 
-            // Update return date
-            loan.ReturnDate = DateTime.UtcNow;
-
-            // Increase available copies of the book
+            // Increase book copies
             book.AvailableCopies++;
 
-            // Save changes to the database
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

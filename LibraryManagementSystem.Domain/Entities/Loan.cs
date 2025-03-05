@@ -1,34 +1,46 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace LibraryManagementSystem.Domain.Entities
 {
-    [Index(nameof(BookId))]
-    [Index(nameof(MemberId))]
+    [Index(nameof(BookId), nameof(MemberId), IsUnique = false)] // Example only
     public class Loan
     {
-        [Key]
-        public int Id { get; set; }
+        public int Id { get; private set; }
+        public int BookId { get; private set; }
+        public Book Book { get; private set; } = null!;
+        public int MemberId { get; private set; }
+        public Member Member { get; private set; } = null!;
+        public DateTime LoanDate { get; private set; }
+        public DateTime DueDate { get; private set; }
+        public DateTime? ReturnDate { get; private set; }
 
-        [Required]
-        public int BookId { get; set; }
+        private Loan() { }
 
-        [Required]
-        public int MemberId { get; set; }
+        public Loan(int bookId, int memberId, DateTime loanDate, DateTime dueDate)
+        {
+            if (bookId <= 0)
+                throw new ArgumentException("Invalid book ID for loan.");
 
-        [Required]
-        public DateTime LoanDate { get; set; }
+            if (memberId <= 0)
+                throw new ArgumentException("Invalid member ID for loan.");
 
-        [Required]
-        public DateTime DueDate { get; set; }
+            if (dueDate < loanDate)
+                throw new ArgumentException("DueDate cannot be earlier than LoanDate.");
 
-        public DateTime? ReturnDate { get; set; }
+            BookId = bookId;
+            MemberId = memberId;
+            LoanDate = loanDate;
+            DueDate = dueDate;
+            ReturnDate = null;
+        }
 
-        [ForeignKey(nameof(BookId))]
-        public Book Book { get; set; }
+        public void MarkAsReturned()
+        {
+            if (ReturnDate != null)
+                throw new InvalidOperationException("This loan has already been returned.");
 
-        [ForeignKey(nameof(MemberId))]
-        public Member Member { get; set; }
+            ReturnDate = DateTime.UtcNow;
+        }
     }
 }

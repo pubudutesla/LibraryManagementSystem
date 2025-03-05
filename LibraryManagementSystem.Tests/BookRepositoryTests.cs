@@ -16,7 +16,7 @@ namespace LibraryManagementSystem.Tests.Repositories
         public BookRepositoryTests()
         {
             var options = new DbContextOptionsBuilder<LibraryDbContext>()
-                .UseInMemoryDatabase(databaseName: "LibraryTestDb")
+                .UseInMemoryDatabase(databaseName: "LibraryTestDb_Books")
                 .Options;
 
             _context = new LibraryDbContext(options);
@@ -26,22 +26,24 @@ namespace LibraryManagementSystem.Tests.Repositories
         [Fact]
         public async Task AddAsync_ShouldAddBook()
         {
-            // Arrange
-            var book = new Book
-            {
-                Id = 1,
-                Title = "Book One",
-                Author = "Author A",
-                ISBN = "1234567890",
-                Genre = "Fiction"
-            };
+            // Arrange: Use the domain constructor
+            var book = new Book(
+                title: "Book One",
+                author: "Author A",
+                isbn: "1234567890",
+                genre: "Fiction",
+                publicationYear: 2022,
+                availableCopies: 5
+            );
 
             // Act
             await _bookRepository.AddAsync(book);
             await _context.SaveChangesAsync();
 
+            // The ID is assigned by EF after save
+            var result = await _bookRepository.GetByIdAsync(book.Id);
+
             // Assert
-            var result = await _bookRepository.GetByIdAsync(1);
             Assert.NotNull(result);
             Assert.Equal("Book One", result.Title);
         }
@@ -49,22 +51,27 @@ namespace LibraryManagementSystem.Tests.Repositories
         [Fact]
         public async Task GetByIdAsync_ShouldReturnBook_WhenExists()
         {
-            var book = new Book
-            {
-                Title = "Test Book",
-                Author = "John Doe",
-                ISBN = "987-6543210987",
-                Genre = "Science",
-                PublicationYear = 2021,
-                AvailableCopies = 10
-            };
-            var addedBook = await _bookRepository.AddAsync(book);
+            // Arrange: create & save a new book
+            var book = new Book(
+                title: "Test Book",
+                author: "John Doe",
+                isbn: "987-6543210987",
+                genre: "Science",
+                publicationYear: 2021,
+                availableCopies: 10
+            );
+            await _bookRepository.AddAsync(book);
             await _context.SaveChangesAsync();
 
-            // Use the actual generated Id
-            var result = await _bookRepository.GetByIdAsync(addedBook.Id);
+            // The ID is assigned now
+            var bookId = book.Id;
+
+            // Act
+            var result = await _bookRepository.GetByIdAsync(bookId);
+
+            // Assert
             Assert.NotNull(result);
-            Assert.Equal(addedBook.Id, result.Id);
+            Assert.Equal(bookId, result.Id);
         }
 
         [Fact]
@@ -81,25 +88,27 @@ namespace LibraryManagementSystem.Tests.Repositories
         public async Task DeleteAsync_ShouldRemoveBook()
         {
             // Arrange
-            var book = new Book
-            {
-                Id = 1,
-                Title = "Test Book",
-                Author = "John Doe",
-                ISBN = "123-4567890123",
-                Genre = "Fiction", 
-                PublicationYear = 2022,
-                AvailableCopies = 5
-            };
+            var book = new Book(
+                title: "Test Book",
+                author: "John Doe",
+                isbn: "123-4567890123",
+                genre: "Fiction",
+                publicationYear: 2022,
+                availableCopies: 5
+            );
+
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
+            // Now we have a valid ID
+            var bookId = book.Id;
+
             // Act
-            await _bookRepository.DeleteAsync(3);
+            await _bookRepository.DeleteAsync(bookId);
             await _context.SaveChangesAsync();
 
             // Assert
-            var deletedBook = await _context.Books.FindAsync(3);
+            var deletedBook = await _context.Books.FindAsync(bookId);
             Assert.Null(deletedBook);
         }
     }

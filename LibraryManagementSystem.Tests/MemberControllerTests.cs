@@ -1,36 +1,44 @@
-﻿using Xunit;
-using Moq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xunit;
+using Moq;
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagementSystem.Api.Controllers;
 using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Services;
+using Microsoft.Extensions.Logging;
 
 namespace LibraryManagementSystem.Tests.Controllers
 {
     public class MemberControllerTests
     {
         private readonly Mock<IMemberService> _mockMemberService;
+        private readonly Mock<ILogger<MemberController>> _mockLogger;
         private readonly MemberController _controller;
 
         public MemberControllerTests()
         {
             _mockMemberService = new Mock<IMemberService>();
-            _controller = new MemberController(_mockMemberService.Object);
+            // Initialize the logger mock!
+            _mockLogger = new Mock<ILogger<MemberController>>();
+
+            // Pass both mocks to the controller's constructor
+            _controller = new MemberController(_mockMemberService.Object, _mockLogger.Object);
         }
 
         [Fact]
         public async Task GetMembers_ShouldReturnOk_WithMembers()
         {
             // Arrange
-            var members = new List<MemberResponseDto> // Change from MemberDto to MemberResponseDto
+            var members = new List<MemberResponseDto>
             {
                 new MemberResponseDto { Id = 1, Username = "admin", Name = "Admin User" },
                 new MemberResponseDto { Id = 2, Username = "librarian", Name = "Librarian User" }
             };
 
-            _mockMemberService.Setup(s => s.GetAllMembersAsync()).ReturnsAsync(members);
+            _mockMemberService
+                .Setup(s => s.GetAllMembersAsync())
+                .ReturnsAsync(members);
 
             // Act
             var result = await _controller.GetMembers();
@@ -45,13 +53,9 @@ namespace LibraryManagementSystem.Tests.Controllers
         public async Task GetMemberById_ShouldReturnNotFound_WhenMemberDoesNotExist()
         {
             // Arrange
-            var members = new List<MemberResponseDto> // Change from MemberDto to MemberResponseDto
-            {
-                new MemberResponseDto { Id = 1, Username = "admin", Name = "Admin User" },
-                new MemberResponseDto { Id = 2, Username = "librarian", Name = "Librarian User" }
-            };
-
-            _mockMemberService.Setup(s => s.GetAllMembersAsync()).ReturnsAsync(members);
+            _mockMemberService
+                .Setup(s => s.GetMemberByIdAsync(999))
+                .ReturnsAsync((MemberResponseDto?)null);
 
             // Act
             var result = await _controller.GetMemberById(999);
@@ -79,8 +83,9 @@ namespace LibraryManagementSystem.Tests.Controllers
                 Name = "Test User"
             };
 
-            _mockMemberService.Setup(s => s.AddMemberAsync(It.IsAny<MemberRegistrationDto>()))
-                              .ReturnsAsync(memberResponseDto);
+            _mockMemberService
+                .Setup(s => s.AddMemberAsync(registrationDto))
+                .ReturnsAsync(memberResponseDto);
 
             // Act
             var result = await _controller.AddMember(registrationDto);
@@ -94,7 +99,9 @@ namespace LibraryManagementSystem.Tests.Controllers
         public async Task DeleteMember_ShouldReturnNoContent_WhenSuccessful()
         {
             // Arrange
-            _mockMemberService.Setup(s => s.DeleteMemberAsync(1)).ReturnsAsync(true);
+            _mockMemberService
+                .Setup(s => s.DeleteMemberAsync(1))
+                .ReturnsAsync(true);
 
             // Act
             var result = await _controller.DeleteMember(1);

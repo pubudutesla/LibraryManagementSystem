@@ -14,9 +14,8 @@ namespace LibraryManagementSystem.Api.Controllers
     public class LogController : ControllerBase
     {
         private readonly string _logDirectory = "Logs"; // Logs directory path
-        [AllowAnonymous]
         [HttpGet]
-        //[Authorize(Roles = "Admin")] // Restrict access to Admins only
+        [Authorize(Roles = "Admin")] // Restrict access to Admins only
         public async Task<IActionResult> GetLogs()
         {
             try

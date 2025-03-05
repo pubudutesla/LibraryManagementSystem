@@ -2,8 +2,6 @@
 using LibraryManagementSystem.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Api.Controllers
 {
@@ -12,10 +10,12 @@ namespace LibraryManagementSystem.Api.Controllers
     public class MemberController : ControllerBase
     {
         private readonly IMemberService _service;
+        private readonly ILogger<MemberController> _logger;
 
-        public MemberController(IMemberService service)
+        public MemberController(IMemberService service, ILogger<MemberController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         /// <summary>
@@ -23,10 +23,19 @@ namespace LibraryManagementSystem.Api.Controllers
         /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetMembers()
+        public async Task<ActionResult<IEnumerable<MemberResponseDto>>> GetMembers()
         {
-            var members = await _service.GetAllMembersAsync();
-            return Ok(members);
+            _logger.LogInformation("Fetching all members");
+            try
+            {
+                var members = await _service.GetAllMembersAsync();
+                return Ok(members);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all members");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         /// <summary>
@@ -34,21 +43,31 @@ namespace LibraryManagementSystem.Api.Controllers
         /// </summary>
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<MemberDto>> GetMemberById(int id)
+        public async Task<ActionResult<MemberResponseDto>> GetMemberById(int id)
         {
-            var member = await _service.GetMemberByIdAsync(id);
-            if (member == null) return NotFound();
-            return Ok(member);
+            _logger.LogInformation("Fetching member with ID {Id}", id);
+            try
+            {
+                var member = await _service.GetMemberByIdAsync(id);
+                if (member == null)
+                    return NotFound();
+                return Ok(member);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching member ID {Id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         /// <summary>
-        /// Create a new member (Admin only)
+        /// Create a new member (Librarian or Admin)
         /// </summary>
-        ///
         [HttpPost]
         [Authorize(Policy = "LibrarianOrAdmin")]
-        public async Task<ActionResult<MemberDto>> AddMember(MemberRegistrationDto createMemberDto)
+        public async Task<ActionResult<MemberResponseDto>> AddMember(MemberRegistrationDto createMemberDto)
         {
+            _logger.LogInformation("Creating new member: {Username}", createMemberDto.Username);
             try
             {
                 var addedMember = await _service.AddMemberAsync(createMemberDto);
@@ -56,7 +75,20 @@ namespace LibraryManagementSystem.Api.Controllers
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                // e.g. invalid membership type
+                _logger.LogWarning(ex, "Failed to create member due to argument error");
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // e.g. username is already taken
+                _logger.LogWarning(ex, "Failed to create member due to invalid operation");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception creating new member");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
             }
         }
 
@@ -67,9 +99,29 @@ namespace LibraryManagementSystem.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateMember(int id, MemberUpdateDto updateMemberDto)
         {
-            var success = await _service.UpdateMemberAsync(id, updateMemberDto);
-            if (!success) return NotFound();
-            return NoContent();
+            _logger.LogInformation("Updating member with ID {Id}", id);
+            try
+            {
+                var success = await _service.UpdateMemberAsync(id, updateMemberDto);
+                if (!success)
+                    return NotFound();
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Update member failed for ID {Id} due to argument error", id);
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Update member failed for ID {Id} due to invalid operation", id);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception updating member ID {Id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         /// <summary>
@@ -79,9 +131,19 @@ namespace LibraryManagementSystem.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMember(int id)
         {
-            var success = await _service.DeleteMemberAsync(id);
-            if (!success) return NotFound();
-            return NoContent();
+            _logger.LogInformation("Deleting member with ID {Id}", id);
+            try
+            {
+                var success = await _service.DeleteMemberAsync(id);
+                if (!success)
+                    return NotFound();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception deleting member ID {Id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
     }
 }

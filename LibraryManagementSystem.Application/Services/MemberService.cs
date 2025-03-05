@@ -32,23 +32,29 @@ namespace LibraryManagementSystem.Application.Services
 
         public async Task<MemberResponseDto> AddMemberAsync(MemberRegistrationDto registrationDto)
         {
-            if (!Enum.TryParse<MembershipType>(registrationDto.MembershipType, true, out var membershipType))
+            if (!Enum.TryParse(registrationDto.MembershipType, true, out MembershipType membershipType))
             {
-                throw new ArgumentException($"Invalid membership type '{registrationDto.MembershipType}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(MembershipType)))}");
+                throw new ArgumentException(
+                    $"Invalid membership type '{registrationDto.MembershipType}'. " +
+                    $"Allowed values: {string.Join(", ", Enum.GetNames(typeof(MembershipType)))}");
             }
 
-            string normalizedUsername = registrationDto.Username.ToLower();
-
+            var normalizedUsername = registrationDto.Username.ToLower();
             var existingMember = await _unitOfWork.Members.GetByUsernameAsync(normalizedUsername);
-
             if (existingMember != null)
             {
-                throw new InvalidOperationException($"Username '{registrationDto.Username}' is already taken.");
+                throw new InvalidOperationException(
+                    $"Username '{registrationDto.Username}' is already taken.");
             }
 
-            var newMember = _mapper.Map<Member>(registrationDto);
-            newMember.Username = normalizedUsername; // Normalize for case-insensitivity
-            newMember.PasswordHash = HashPassword(registrationDto.Password); // Hash password manually
+            // Create a domain Member object
+            var newMember = new Member(
+                username: normalizedUsername,
+                name: registrationDto.Name,
+                email: registrationDto.Email,
+                passwordHash: HashPassword(registrationDto.Password),
+                membershipType: membershipType
+            );
 
             await _unitOfWork.Members.AddAsync(newMember);
             await _unitOfWork.SaveChangesAsync();
@@ -65,25 +71,27 @@ namespace LibraryManagementSystem.Application.Services
         public async Task<bool> UpdateMemberAsync(int id, MemberUpdateDto updateDto)
         {
             var existingMember = await _unitOfWork.Members.GetByIdAsync(id);
-            if (existingMember == null) return false;
+            if (existingMember == null) return false; // let controller 404
 
-            existingMember.Name = updateDto.Name ?? existingMember.Name;
-            existingMember.Email = updateDto.Email ?? existingMember.Email;
-
-            if (!string.IsNullOrWhiteSpace(updateDto.MembershipType))
+            // If you have the domain method `Update(...)`:
+            MembershipType? membershipTypeParsed = null;
+            if (!string.IsNullOrWhiteSpace(updateDto.MembershipType) &&
+                Enum.TryParse(updateDto.MembershipType, out MembershipType parsedType))
             {
-                if (Enum.TryParse(updateDto.MembershipType, out MembershipType parsedType))
-                {
-                    existingMember.MembershipType = parsedType;
-                }
+                membershipTypeParsed = parsedType;
             }
 
-            if (!string.IsNullOrWhiteSpace(updateDto.Password))
-            {
-                existingMember.PasswordHash = HashPassword(updateDto.Password);
-            }
+            // Domain approach: calls entity method
+            existingMember.Update(
+                newName: updateDto.Name,
+                newEmail: updateDto.Email,
+                newPasswordHash: !string.IsNullOrWhiteSpace(updateDto.Password)
+                    ? HashPassword(updateDto.Password)
+                    : null,
+                newMembershipType: membershipTypeParsed
+            );
 
-            _unitOfWork.Members.UpdateAsync(existingMember);
+            _unitOfWork.Members.UpdateAsync(existingMember); // or just Update(existingMember)
             await _unitOfWork.SaveChangesAsync();
             return true;
         }

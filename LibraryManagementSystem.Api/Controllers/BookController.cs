@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Services;
-using LibraryManagementSystem.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LibraryManagementSystem.Api.Controllers
 {
@@ -21,49 +22,101 @@ namespace LibraryManagementSystem.Api.Controllers
 
         [AllowAnonymous]
         [HttpGet]
+        [EnableRateLimiting("GetBooksLimiter")]
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
             _logger.LogInformation("Fetching all books");
-            var books = await _service.GetAllBooksAsync();
-            return Ok(books);
+            try
+            {
+                var books = await _service.GetAllBooksAsync();
+                return Ok(books);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while fetching all books.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDto>> GetBookById(int id)
         {
             _logger.LogInformation("Fetching book with ID {Id}", id);
-            var book = await _service.GetBookByIdAsync(id);
-            if (book == null)
+            try
             {
-                _logger.LogWarning("Book with ID {Id} not found", id);
-                return NotFound();
+                var book = await _service.GetBookByIdAsync(id);
+                if (book == null)
+                {
+                    return NotFound();
+                }
+                return Ok(book);
             }
-            return Ok(book);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while fetching book ID {Id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         // Requires 'Librarian' or 'Admin' role
         [Authorize(Policy = "LibrarianOrAdmin")]
         [HttpPost]
-        public async Task<ActionResult<BookDto>> AddBook(BookDto bookDto)
+        public async Task<ActionResult<BookDto>> AddBook([FromBody] BookDto bookDto)
         {
             _logger.LogInformation("Adding new book: {Title}", bookDto.Title);
-            var addedBook = await _service.AddBookAsync(bookDto);
-            return CreatedAtAction(nameof(GetBookById), new { id = addedBook.Id }, addedBook);
+            try
+            {
+                var addedBook = await _service.AddBookAsync(bookDto);
+                return CreatedAtAction(nameof(GetBookById), new { id = addedBook.Id }, addedBook);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid input when adding book.");
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Operation error when adding book.");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception when adding new book.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         // Requires 'Admin' role
         [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(int id, BookDto bookDto)
+        public async Task<IActionResult> UpdateBook(int id, [FromBody] BookDto bookDto)
         {
             _logger.LogInformation("Updating book with ID {Id}", id);
-            var success = await _service.UpdateBookAsync(id, bookDto);
-            if (!success)
+            try
             {
-                _logger.LogError("Failed to update book with ID {Id}. Not found.", id);
-                return NotFound();
+                var success = await _service.UpdateBookAsync(id, bookDto);
+                if (!success)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-            return NoContent();
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid input when updating book ID {Id}.", id);
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Duplicate ISBN or other domain conflict
+                _logger.LogWarning(ex, "Conflict error when updating book ID {Id}.", id);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception when updating book ID {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         // Requires 'Admin' role
@@ -72,13 +125,20 @@ namespace LibraryManagementSystem.Api.Controllers
         public async Task<IActionResult> DeleteBook(int id)
         {
             _logger.LogInformation("Deleting book with ID {Id}", id);
-            var success = await _service.DeleteBookAsync(id);
-            if (!success)
+            try
             {
-                _logger.LogError("Failed to delete book with ID {Id}. Not found.", id);
-                return NotFound();
+                var success = await _service.DeleteBookAsync(id);
+                if (!success)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception when deleting book ID {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
     }
 }
